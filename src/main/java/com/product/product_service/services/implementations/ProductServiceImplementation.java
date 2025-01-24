@@ -102,17 +102,19 @@ public class ProductServiceImplementation implements ProductService {
     @Override
     public ResponseEntity<List<ExistentProductsRecord>> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList){
         List<ExistentProductsRecord> listOfProducts = new ArrayList<>();
+
         productQuantityRecordList.forEach( product -> {
             if (existsProductById(product.id())){
                 try {
                     Product realProduct = getProductById(product.id());
 
                     if (realProduct.getStock()>=product.quantity()){
-                        System.out.println("anda");
                         listOfProducts.add(new ExistentProductsRecord(product.id(), realProduct.getPrice(), product.quantity()));
                         realProduct.setStock(realProduct.getStock() - product.quantity());
 
                         productRepository.save(realProduct);
+                    } else {
+                        listOfProducts.add(new ExistentProductsRecord(product.id(), null, realProduct.getStock()));
                     }
                 } catch (ProductNotFoundException e) {
                     throw new RuntimeException(e);
