@@ -1,6 +1,8 @@
 package com.product.product_service.services.implementations;
 
+import com.product.product_service.dtos.ExistentProductsRecord;
 import com.product.product_service.dtos.ProductDTO;
+import com.product.product_service.dtos.ProductQuantityRecord;
 import com.product.product_service.exceptions.IllegalAttributeException;
 import com.product.product_service.exceptions.ProductNotFoundException;
 import com.product.product_service.models.Product;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -83,5 +86,40 @@ public class ProductServiceImplementation implements ProductService {
         if(productDTO.getPrice() == null) {
             throw new IllegalAttributeException("Price cannot be null or empty");
         }
+    }
+
+    @Override
+    public boolean existsProductById(Long id) {
+        return productRepository.existsById(id);
+    }
+
+    @Override
+    public Product getProductById(Long id) throws ProductNotFoundException {
+        return productRepository.findById(id).orElseThrow(()->new ProductNotFoundException("Product not found with ID: " + id));
+
+    }
+
+    @Override
+    public ResponseEntity<List<ExistentProductsRecord>> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList){
+        List<ExistentProductsRecord> listOfProducts = new ArrayList<>();
+        productQuantityRecordList.forEach( product -> {
+            if (existsProductById(product.id())){
+                try {
+                    Product realProduct = getProductById(product.id());
+
+                    if (realProduct.getStock()>=product.quantity()){
+                        System.out.println("anda");
+                        listOfProducts.add(new ExistentProductsRecord(product.id(), realProduct.getPrice(), product.quantity()));
+                        realProduct.setStock(realProduct.getStock() - product.quantity());
+
+                        productRepository.save(realProduct);
+                    }
+                } catch (ProductNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        return new ResponseEntity<>(listOfProducts, HttpStatus.OK);
     }
 }

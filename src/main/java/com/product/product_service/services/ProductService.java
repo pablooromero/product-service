@@ -1,7 +1,10 @@
 package com.product.product_service.services;
 
+import com.product.product_service.dtos.ExistentProductsRecord;
 import com.product.product_service.dtos.ProductDTO;
+import com.product.product_service.dtos.ProductQuantityRecord;
 import com.product.product_service.exceptions.IllegalAttributeException;
+import com.product.product_service.exceptions.ProductNotFoundException;
 import com.product.product_service.models.Product;
 import org.springframework.http.ResponseEntity;
 
@@ -19,4 +22,10 @@ public interface ProductService {
     ResponseEntity<String> deleteProduct(Long id);
 
     void validateProduct(ProductDTO productDTO) throws IllegalAttributeException;
+
+    boolean existsProductById(Long id);
+
+    Product getProductById(Long id) throws ProductNotFoundException;
+
+    ResponseEntity<List<ExistentProductsRecord>> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList);
 }

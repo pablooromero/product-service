@@ -1,6 +1,8 @@
 package com.product.product_service.controllers;
 
+import com.product.product_service.dtos.ExistentProductsRecord;
 import com.product.product_service.dtos.ProductDTO;
+import com.product.product_service.dtos.ProductQuantityRecord;
 import com.product.product_service.exceptions.IllegalAttributeException;
 import com.product.product_service.models.Product;
 import com.product.product_service.services.ProductService;
@@ -83,5 +85,10 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id);
+    }
+
+    @PutMapping()
+    public ResponseEntity<List<ExistentProductsRecord>> existentProducts(@RequestBody List<ProductQuantityRecord> productQuantityRecords) throws IllegalAttributeException {
+        return productService.getAllAvailableProducts(productQuantityRecords);
     }
 }
