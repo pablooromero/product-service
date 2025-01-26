@@ -117,7 +117,7 @@ public class ProductServiceImplementation implements ProductService {
                         listOfProducts.add(new ExistentProductsRecord(product.id(), null, realProduct.getStock()));
                     }
                 } catch (ProductNotFoundException e) {
-                    throw new RuntimeException(e);
+                    throw new ProductNotFoundException(e.getMessage());
                 }
             }
         });
