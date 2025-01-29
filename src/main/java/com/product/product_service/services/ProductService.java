@@ -3,11 +3,14 @@ package com.product.product_service.services;
 import com.product.product_service.dtos.ExistentProductsRecord;
 import com.product.product_service.dtos.ProductDTO;
 import com.product.product_service.dtos.ProductQuantityRecord;
+import com.product.product_service.dtos.ProductRecord;
 import com.product.product_service.exceptions.IllegalAttributeException;
+import com.product.product_service.exceptions.ProductException;
 import com.product.product_service.exceptions.ProductNotFoundException;
 import com.product.product_service.models.Product;
 import org.springframework.http.ResponseEntity;
 
+import java.util.HashMap;
 import java.util.List;
 
 public interface ProductService {
@@ -27,5 +30,13 @@ public interface ProductService {
 
     Product getProductById(Long id) throws ProductNotFoundException;
 
-    ResponseEntity<List<ExistentProductsRecord>> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList);
+    HashMap<Long, Integer> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList);
+
+    ExistentProductsRecord getOneAvailableProduct(ProductQuantityRecord quantityRecord);
+
+    void updateProductsQuantity(List<ProductQuantityRecord> quantityRecord);
+
+    void updateProductQuantity(Long idProduct, Integer quantity) throws ProductException;
+
+    ProductRecord getDataProductById(Long id) throws ProductException;
 }

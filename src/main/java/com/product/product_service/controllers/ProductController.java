@@ -3,9 +3,12 @@ package com.product.product_service.controllers;
 import com.product.product_service.dtos.ExistentProductsRecord;
 import com.product.product_service.dtos.ProductDTO;
 import com.product.product_service.dtos.ProductQuantityRecord;
+import com.product.product_service.dtos.ProductRecord;
 import com.product.product_service.exceptions.IllegalAttributeException;
+import com.product.product_service.exceptions.ProductException;
 import com.product.product_service.models.Product;
 import com.product.product_service.services.ProductService;
+import com.product.product_service.utils.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -13,9 +16,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -88,7 +93,20 @@ public class ProductController {
     }
 
     @PutMapping()
-    public ResponseEntity<List<ExistentProductsRecord>> existentProducts(@RequestBody List<ProductQuantityRecord> productQuantityRecords) throws IllegalAttributeException {
-        return productService.getAllAvailableProducts(productQuantityRecords);
+    public ResponseEntity<HashMap<Long, Integer>> existsProducts(@RequestBody List<ProductQuantityRecord> recordList){
+        HashMap<Long, Integer> products = productService.getAllAvailableProducts(recordList);
+        return ResponseEntity.ok(products);
+    }
+
+    @PutMapping("/to-order")
+    public ResponseEntity<String> existProduct(@RequestBody List<ProductQuantityRecord> quantityRecord) throws ProductException {
+        productService.updateProductsQuantity(quantityRecord);
+        return new ResponseEntity<String>(Constants.UPDATED_PDT, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductRecord> getProductById(@PathVariable Long id) throws ProductException {
+        ProductRecord product = productService.getDataProductById(id);
+        return ResponseEntity.ok(product);
     }
 }
