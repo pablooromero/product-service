@@ -17,4 +17,12 @@ public class ExceptionHandlers {
     public ResponseEntity<String> illegalAttributeExceptionHandler(IllegalAttributeException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ProductException.class)
+    public ResponseEntity<String> orderExceptionHandler(ProductException productException){
+        if (productException.getHttpStatus()!=null)
+            return new ResponseEntity<>(productException.getMessage(), productException.getHttpStatus());
+        else
+            return new ResponseEntity<>(productException.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

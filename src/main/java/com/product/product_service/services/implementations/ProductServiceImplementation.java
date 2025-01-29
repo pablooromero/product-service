@@ -3,17 +3,20 @@ package com.product.product_service.services.implementations;
 import com.product.product_service.dtos.ExistentProductsRecord;
 import com.product.product_service.dtos.ProductDTO;
 import com.product.product_service.dtos.ProductQuantityRecord;
+import com.product.product_service.dtos.ProductRecord;
 import com.product.product_service.exceptions.IllegalAttributeException;
+import com.product.product_service.exceptions.ProductException;
 import com.product.product_service.exceptions.ProductNotFoundException;
 import com.product.product_service.models.Product;
 import com.product.product_service.repositories.ProductRepository;
 import com.product.product_service.services.ProductService;
+import com.product.product_service.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -100,28 +103,59 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public ResponseEntity<List<ExistentProductsRecord>> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList){
-        List<ExistentProductsRecord> listOfProducts = new ArrayList<>();
+    public HashMap<Long, Integer> getAllAvailableProducts(List<ProductQuantityRecord> productQuantityRecordList){
+        HashMap<Long, Integer> availableProductMap = new HashMap<>();
 
         productQuantityRecordList.forEach( product -> {
-            if (existsProductById(product.id())){
-                try {
-                    Product realProduct = getProductById(product.id());
+            try{
+                Product aux = getProductById(product.id());
+                availableProductMap.put(aux.getId(), aux.getStock());
+            }catch (ProductNotFoundException e){
 
-                    if (realProduct.getStock()>=product.quantity()){
-                        listOfProducts.add(new ExistentProductsRecord(product.id(), realProduct.getPrice(), product.quantity()));
-                        realProduct.setStock(realProduct.getStock() - product.quantity());
-
-                        productRepository.save(realProduct);
-                    } else {
-                        listOfProducts.add(new ExistentProductsRecord(product.id(), null, realProduct.getStock()));
-                    }
-                } catch (ProductNotFoundException e) {
-                    throw new ProductNotFoundException(e.getMessage());
-                }
             }
         });
+        return availableProductMap;
+    }
 
-        return new ResponseEntity<>(listOfProducts, HttpStatus.OK);
+    @Override
+    public ExistentProductsRecord getOneAvailableProduct(ProductQuantityRecord quantityRecord){
+        try {
+            Product product = getProductById(quantityRecord.id());
+            if (product.getStock()>= quantityRecord.quantity()){
+                product.setStock(product.getStock()-quantityRecord.quantity());
+                productRepository.save(product);
+                return new ExistentProductsRecord(product.getId(), product.getPrice(), quantityRecord.quantity());
+            }else{
+                return new ExistentProductsRecord(product.getId(), null, quantityRecord.quantity());
+            }
+        } catch (ProductNotFoundException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public void updateProductsQuantity(List<ProductQuantityRecord> quantityRecord){
+        quantityRecord.forEach(product ->{
+            try {
+                updateProductQuantity(product.id(), product.quantity());
+            } catch (ProductException e) {
+            }
+        });
+    }
+
+    @Override
+    public void updateProductQuantity(Long idProduct, Integer quantity) throws ProductException {
+        Product product = getProductById(idProduct);
+        if (product.getStock()+quantity<0){
+            throw new ProductException(Constants.NEGATIVE_STOCK, HttpStatus.NOT_ACCEPTABLE);
+        }
+        product.setStock(product.getStock()+quantity);
+        productRepository.save(product);
+    }
+
+    @Override
+    public ProductRecord getDataProductById(Long id) throws ProductException {
+        Product product = getProductById(id);
+        return new ProductRecord(product.getId(),product.getName(), product.getDescription(), product.getPrice(), product.getStock());
     }
 }
