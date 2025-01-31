@@ -9,4 +9,5 @@ public class Constants {
     public static final String INVALID_STOCK = "The stock must be positive or 0";
     public static final String NEGATIVE_STOCK = "Not enough stock";
     public static final String UPDATED_PDT = "The product/s were been updated successfully";
+    public static final String PRODUCT_DELETED = "Product deleted!";
 }

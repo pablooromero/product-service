@@ -1,10 +1,6 @@
 package com.product.product_service.controllers;
 
-import com.product.product_service.dtos.ExistentProductsRecord;
-import com.product.product_service.dtos.ProductDTO;
-import com.product.product_service.dtos.ProductQuantityRecord;
-import com.product.product_service.dtos.ProductRecord;
-import com.product.product_service.exceptions.IllegalAttributeException;
+import com.product.product_service.dtos.*;
 import com.product.product_service.exceptions.ProductException;
 import com.product.product_service.models.Product;
 import com.product.product_service.services.ProductService;
@@ -22,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("api/products")
@@ -40,9 +37,14 @@ public class ProductController {
                     )
             )
     })
-    @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    @GetMapping("/public")
+    public ResponseEntity<Set<ExistentProductsRecord>> getAllProducts() {
         return productService.getAllProducts();
+    }
+
+    @GetMapping("admin/{id}")
+    public ResponseEntity<ProductRecord> getProductById(@PathVariable Long id) throws ProductException {
+        return productService.getDataProductById(id);
     }
 
     @Operation(summary = "Create a new product", description = "Create a new product")
@@ -56,9 +58,9 @@ public class ProductController {
                     )
             )
     })
-    @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) throws IllegalAttributeException {
-        return productService.createProduct(productDTO);
+    @PostMapping("/admin")
+    public ResponseEntity<Product> createProduct(@RequestBody NewProductRecord newProductRecord) throws ProductException {
+        return productService.createProduct(newProductRecord);
     }
 
 
@@ -73,9 +75,9 @@ public class ProductController {
                     )
             )
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) throws IllegalAttributeException {
-        return productService.updateProduct(id, productDTO);
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<ExistentProductsRecord> updateProduct(@PathVariable Long id, @RequestBody NewProductRecord newProductRecord) throws ProductException {
+        return productService.updateProduct(id, newProductRecord);
     }
 
     @Operation(summary = "Delete a product", description = "Delete an existing product by its ID")
@@ -87,26 +89,20 @@ public class ProductController {
                     )
             )
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
-        return productService.deleteProduct(id);
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<String> deleteProductById(@PathVariable Long id) throws ProductException {
+        return productService.deleteProductById(id);
     }
 
-    @PutMapping()
+    @PutMapping("/private")
     public ResponseEntity<HashMap<Long, Integer>> existsProducts(@RequestBody List<ProductQuantityRecord> recordList){
         HashMap<Long, Integer> products = productService.getAllAvailableProducts(recordList);
         return ResponseEntity.ok(products);
     }
 
-    @PutMapping("/to-order")
+    @PutMapping("private/to-order")
     public ResponseEntity<String> existProduct(@RequestBody List<ProductQuantityRecord> quantityRecord) throws ProductException {
         productService.updateProductsQuantity(quantityRecord);
         return new ResponseEntity<String>(Constants.UPDATED_PDT, HttpStatus.OK);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductRecord> getProductById(@PathVariable Long id) throws ProductException {
-        ProductRecord product = productService.getDataProductById(id);
-        return ResponseEntity.ok(product);
     }
 }
