@@ -60,10 +60,9 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     public ResponseEntity<ProductRecord> getDataProductById(Long id) throws ProductException {
-        logger.info("Getting detailed product data for ID: {}", id);
         Product product = getProductById(id);
         ProductRecord productRecord = new ProductRecord(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getStock());
-        logger.debug("Product record: {}", productRecord);
+
         return new ResponseEntity<>(productRecord, HttpStatus.OK);
     }
 

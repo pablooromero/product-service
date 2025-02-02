@@ -51,7 +51,7 @@ public class ProductController {
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(value = "Product not found with ID: 1")))
     })
-    @GetMapping("admin/{id}")
+    @GetMapping("/public/{id}")
     public ResponseEntity<ProductRecord> getProductById(@PathVariable Long id) throws ProductException {
         return productService.getDataProductById(id);
     }
