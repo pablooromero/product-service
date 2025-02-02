@@ -32,7 +32,7 @@ public class ProductServiceImplementation implements ProductService {
     public ResponseEntity<Set<ExistentProductsRecord>> getAllProducts() {
         Set<ExistentProductsRecord> products = productRepository.findAll()
                 .stream()
-                .map(product -> new ExistentProductsRecord(product.getId(), product.getPrice(), product.getStock()))
+                .map(product -> new ExistentProductsRecord(product.getId(), product.getName(), product.getPrice(), product.getStock()))
                 .collect(Collectors.toSet());
 
         return new ResponseEntity<>(products, HttpStatus.OK);
@@ -94,7 +94,7 @@ public class ProductServiceImplementation implements ProductService {
 
         product = saveProduct(product);
 
-        return new ResponseEntity<>(new ExistentProductsRecord(product.getId(),product.getPrice(), product.getStock()), HttpStatus.OK);
+        return new ResponseEntity<>(new ExistentProductsRecord(product.getId(), product.getName(), product.getPrice(), product.getStock()), HttpStatus.OK);
     }
 
     @Override
@@ -149,9 +149,9 @@ public class ProductServiceImplementation implements ProductService {
             if (product.getStock()>= quantityRecord.quantity()){
                 product.setStock(product.getStock()-quantityRecord.quantity());
                 productRepository.save(product);
-                return new ExistentProductsRecord(product.getId(),product.getPrice(), quantityRecord.quantity());
+                return new ExistentProductsRecord(product.getId(), product.getName(), product.getPrice(), quantityRecord.quantity());
             }else{
-                return new ExistentProductsRecord(product.getId(),null, quantityRecord.quantity());
+                return new ExistentProductsRecord(product.getId(), product.getName(),null, quantityRecord.quantity());
             }
         } catch (ProductException e) {
             return null;
